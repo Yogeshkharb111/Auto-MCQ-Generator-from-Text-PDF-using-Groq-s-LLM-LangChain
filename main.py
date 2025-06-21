@@ -14,8 +14,8 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # LangChain setup
 llm = ChatGroq(
-    api_key="gsk_your_api_key_here",  # <-- Replace with your actual Groq API key
-    model="llama-3.3-70b-versatile",
+    api_key="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",  # <-- Replace with your actual Groq API key
+    model="llama3-70b-8192", 
     temperature=0.0
 )
 
