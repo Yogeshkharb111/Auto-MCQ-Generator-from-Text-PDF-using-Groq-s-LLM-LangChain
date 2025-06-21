@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import os
 from flask import Flask, render_template, request, send_file
 import pdfplumber
@@ -133,7 +132,6 @@ def download_file(filename):
 
 if __name__ == "__main__":
     app.run(debug=True)
-=======
 import os
 from flask import Flask, render_template, request, send_file
 import pdfplumber
@@ -272,4 +270,4 @@ def download_file(filename):
 
 if __name__ == "__main__":
     app.run(debug=True)
->>>>>>> 40403074f9504f4f00fafaab68647aee64f0f4d0
+

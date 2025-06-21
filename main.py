@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import os
 import pdfplumber
 import docx
@@ -99,7 +98,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-=======
 import os
 import pdfplumber
 import docx
@@ -200,4 +198,4 @@ def main():
 
 if __name__ == "__main__":
     main()
->>>>>>> 40403074f9504f4f00fafaab68647aee64f0f4d0
+
