@@ -3,6 +3,15 @@
 An AI-powered web and desktop application that automatically generates Multiple Choice Questions (MCQs) from uploaded text-based files (PDF, DOCX, or TXT) using Groq’s ultra-fast LLMs and LangChain.
 
 ---
+## 🚀 Screenshot
+
+![MCQ Generator Screenshot](![image](https://github.com/user-attachments/assets/c111a947-31ec-4a3f-a11a-b6236047b98c)
+)
+![MCQ Generator Screenshot](![image](https://github.com/user-attachments/assets/8c30af62-d347-4e22-865b-c7c5f698bd89)
+)
+![MCQ Generator Screenshot](![image](https://github.com/user-attachments/assets/ac370dae-56f7-40ae-8038-b352081aa01f)
+)
+
 
 ## 🚀 Features
 
