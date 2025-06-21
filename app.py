@@ -8,7 +8,6 @@ from langchain_groq import ChatGroq
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 
-# Flask setup
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['RESULTS_FOLDER'] = 'results/'
@@ -17,23 +16,23 @@ app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'txt', 'docx'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
-# LangChain LLM setup
+# Use environment variable for API key
 llm = ChatGroq(
-    api_key="gsk_your_api_key_here",  # <-- Replace with your actual Groq API key
-    model="llama-3.3-70b-versatile",
+    api_key="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",
+    model="llama3-70b-8192",  # ✅ Valid model name for Groq
     temperature=0.0
 )
 
-# MCQ Prompt Template
+
 mcq_prompt = PromptTemplate(
-    input_variables=["context", "num_questions"],
+    input_variables=["context", "num_questions", "difficulty"],
     template="""
 You are an AI assistant helping the user generate multiple-choice questions (MCQs) from the text below:
 
 Text:
 {context}
 
-Generate {num_questions} MCQs. Each should include:
+Generate {num_questions} {difficulty}-level MCQs. Each should include:
 - A clear question
 - Four answer options labeled A, B, C, and D
 - The correct answer clearly indicated at the end
@@ -67,20 +66,24 @@ def extract_text_from_file(file_path):
             return file.read()
     return None
 
-def generate_mcqs(text, num_questions):
-    return mcq_chain.run({"context": text, "num_questions": num_questions}).strip()
+def generate_mcqs_with_langchain(text, num_questions, difficulty):
+    return mcq_chain.run({
+        "context": text,
+        "num_questions": num_questions,
+        "difficulty": difficulty
+    }).strip()
 
-def save_to_txt(content, filename):
+def save_mcqs_to_file(mcqs, filename):
     path = os.path.join(app.config['RESULTS_FOLDER'], filename)
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(content)
+        f.write(mcqs)
     return path
 
-def save_to_pdf(content, filename):
+def create_pdf(mcqs, filename):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    for mcq in content.split("## MCQ"):
+    for mcq in mcqs.split("## MCQ"):
         if mcq.strip():
             pdf.multi_cell(0, 10, mcq.strip())
             pdf.ln(5)
@@ -93,10 +96,9 @@ def index():
     return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
-def generate_mcqs_route():
+def generate_mcqs():
     if 'file' not in request.files:
         return "No file uploaded."
-
     file = request.files['file']
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -106,14 +108,17 @@ def generate_mcqs_route():
         text = extract_text_from_file(file_path)
         if text:
             num_questions = int(request.form['num_questions'])
-            mcqs = generate_mcqs(text, num_questions)
+            difficulty = request.form.get('difficulty', 'medium')
+            try:
+                mcqs = generate_mcqs_with_langchain(text, num_questions, difficulty)
+            except Exception as e:
+                return f"Error generating MCQs: {str(e)}"
 
-            base = os.path.splitext(filename)[0]
-            txt_file = f"generated_mcqs_{base}.txt"
-            pdf_file = f"generated_mcqs_{base}.pdf"
-
-            save_to_txt(mcqs, txt_file)
-            save_to_pdf(mcqs, pdf_file)
+            base_name = filename.rsplit('.', 1)[0]
+            txt_file = f"generated_mcqs_{base_name}.txt"
+            pdf_file = f"generated_mcqs_{base_name}.pdf"
+            save_mcqs_to_file(mcqs, txt_file)
+            create_pdf(mcqs, pdf_file)
 
             return render_template('results.html', mcqs=mcqs, txt_filename=txt_file, pdf_filename=pdf_file)
 
@@ -121,8 +126,9 @@ def generate_mcqs_route():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    return send_file(os.path.join(app.config['RESULTS_FOLDER'], filename), as_attachment=True)
+    path = os.path.join(app.config['RESULTS_FOLDER'], filename)
+    return send_file(path, as_attachment=True)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
